@@ -151,6 +151,54 @@ CREATE TABLE enderecos (
         CHECK (tipo_endereco IN ('entrega', 'cobranca'))
 );
 
+CREATE TABLE carrinhos (
+    id BIGINT GENERATED ALWAYS AS IDENTITY,
+    cliente_id BIGINT NOT NULL,
+    status VARCHAR(30) NOT NULL DEFAULT 'aberto',
+    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT pk_carrinhos PRIMARY KEY (id),
+
+    CONSTRAINT fk_carrinhos_cliente_id
+        FOREIGN KEY (cliente_id)
+        REFERENCES clientes(id)
+        ON UPDATE CASCADE
+        ON DELETE CASCADE,
+
+    CONSTRAINT ck_carrinhos_status
+        CHECK (status IN ('aberto', 'finalizado', 'abandonado'))
+);
+
+CREATE TABLE carrinho_itens (
+    id BIGINT GENERATED ALWAYS AS IDENTITY,
+    carrinho_id BIGINT NOT NULL,
+    variacao_produto_id BIGINT NOT NULL,
+    quantidade INTEGER NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT pk_carrinho_itens PRIMARY KEY (id),
+
+    CONSTRAINT fk_carrinho_itens_carrinho_id
+        FOREIGN KEY (carrinho_id)
+        REFERENCES carrinhos(id)
+        ON UPDATE CASCADE
+        ON DELETE CASCADE,
+
+    CONSTRAINT fk_carrinho_itens_variacao_produto_id
+        FOREIGN KEY (variacao_produto_id)
+        REFERENCES variacoes_produto(id)
+        ON UPDATE CASCADE
+        ON DELETE RESTRICT,
+
+    CONSTRAINT ck_carrinho_itens_quantidade_positiva
+        CHECK (quantidade > 0),
+
+    CONSTRAINT uq_carrinho_itens_carrinho_id_variacao_produto_id
+        UNIQUE (carrinho_id, variacao_produto_id)
+);
+
 CREATE TABLE pedidos (
     id BIGINT GENERATED ALWAYS AS IDENTITY,
     cliente_id BIGINT NOT NULL,
@@ -299,6 +347,18 @@ ON imagens_produto (variacao_produto_id);
 
 CREATE INDEX IF NOT EXISTS idx_enderecos_cliente_id
 ON enderecos (cliente_id);
+
+CREATE INDEX IF NOT EXISTS idx_carrinhos_cliente_id
+ON carrinhos (cliente_id);
+
+CREATE INDEX IF NOT EXISTS idx_carrinhos_status
+ON carrinhos (status);
+
+CREATE INDEX IF NOT EXISTS idx_carrinho_itens_carrinho_id
+ON carrinho_itens (carrinho_id);
+
+CREATE INDEX IF NOT EXISTS idx_carrinho_itens_variacao_produto_id
+ON carrinho_itens (variacao_produto_id);
 
 CREATE INDEX IF NOT EXISTS idx_pedidos_cliente_id
 ON pedidos (cliente_id);

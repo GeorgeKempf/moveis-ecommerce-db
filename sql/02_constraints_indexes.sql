@@ -21,6 +21,18 @@ ON imagens_produto (variacao_produto_id);
 CREATE INDEX IF NOT EXISTS idx_enderecos_cliente_id
 ON enderecos (cliente_id);
 
+CREATE INDEX IF NOT EXISTS idx_carrinhos_cliente_id
+ON carrinhos (cliente_id);
+
+CREATE INDEX IF NOT EXISTS idx_carrinhos_status
+ON carrinhos (status);
+
+CREATE INDEX IF NOT EXISTS idx_carrinho_itens_carrinho_id
+ON carrinho_itens (carrinho_id);
+
+CREATE INDEX IF NOT EXISTS idx_carrinho_itens_variacao_produto_id
+ON carrinho_itens (variacao_produto_id);
+
 CREATE INDEX IF NOT EXISTS idx_pedidos_cliente_id
 ON pedidos (cliente_id);
 

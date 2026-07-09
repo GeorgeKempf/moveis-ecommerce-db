@@ -1,10 +1,15 @@
 DROP TABLE IF EXISTS avaliacoes;
-DROP TABLE IF EXISTS estoques;
 DROP TABLE IF EXISTS pagamentos;
+DROP TABLE IF EXISTS estoques;
 DROP TABLE IF EXISTS itens_pedido;
 DROP TABLE IF EXISTS pedidos;
+
+DROP TABLE IF EXISTS carrinho_itens;
+DROP TABLE IF EXISTS carrinhos;
+
 DROP TABLE IF EXISTS enderecos;
 DROP TABLE IF EXISTS clientes;
+
 DROP TABLE IF EXISTS imagens_produto;
 DROP TABLE IF EXISTS variacoes_produto;
 DROP TABLE IF EXISTS produtos;
