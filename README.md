@@ -20,6 +20,7 @@ Modelagem e implementação de um banco de dados PostgreSQL para uma plataforma 
 | `sql/05_drop_tables.sql` | Remove todas as tabelas e o ENUM, na ordem correta, para recriar o banco do zero. |
 | `docs/regras-negocio.md` | Regras de negócio consideradas na modelagem. |
 | `docs/diagrama-er.md` | Mapeamento textual dos relacionamentos entre entidades (não é um diagrama visual — o bônus de ER visual em dbdiagram.io/drawio ainda não foi feito). |
+| `docs/fluxo-carrinho-pedido.md` | Fluxo de compra do carrinho até a criação do pedido. |
 
 `schema.sql` é o arquivo de referência — `sql/01` e `sql/02` contêm o mesmo DDL separado por etapa, para facilitar a leitura.
 
@@ -109,6 +110,10 @@ O banco não calcula frete — apenas guarda os dados necessários para o cálcu
 
 `estoques` se relaciona 1:1 com `variacoes_produto` (constraint `UNIQUE` em `variacao_produto_id`), já que o controle é por variação, não por produto — cada acabamento/cor tem sua própria quantidade. `quantidade_disponivel` é `INTEGER` com `CHECK >= 0`. Suporte a múltiplos depósitos não foi implementado (item bônus/opcional do desafio).
 
+### Carrinho e itens do carrinho
+
+`carrinhos` representa a intenção de compra do cliente antes de virar pedido — 1:N com `clientes`, com `status` (`aberto`, `finalizado`, `abandonado`) validado por `CHECK`. `carrinho_itens` guarda a variação e a quantidade escolhida, com `UNIQUE (carrinho_id, variacao_produto_id)` para não duplicar a mesma variação como duas linhas no mesmo carrinho — adicionar de novo deve atualizar a quantidade, não inserir outra linha. Ao contrário de `itens_pedido`, não guarda `preco_unitario`: o carrinho reflete o preço atual do catálogo, não um valor congelado (isso só passa a existir quando o pedido é criado). Ver `docs/fluxo-carrinho-pedido.md` para o fluxo completo até o pedido.
+
 ### Avaliações
 
 `avaliacoes` referencia `item_pedido_id` (não `produto_id` ou `cliente_id` diretamente), com `UNIQUE` nesse campo. Isso garante, pela própria FK, que só é possível avaliar um item efetivamente comprado, e no máximo uma vez por item — sem precisar de uma trigger para checar "o cliente comprou esse produto?". `nota` tem `CHECK BETWEEN 1 AND 5`.
@@ -134,7 +139,7 @@ O banco não calcula frete — apenas guarda os dados necessários para o cálcu
 Para `ON DELETE`, a regra que segui foi: **dado histórico não pode sumir, dado dependente sem o pai não faz sentido existir**.
 
 - `RESTRICT` — pedidos, itens de pedido (via variação), pagamentos: impede apagar cliente, endereço, produto/variação ou pedido que já tem histórico associado.
-- `CASCADE` — endereços de um cliente, imagens de um produto/variação, estoque de uma variação, itens de um pedido: fazem sentido apenas enquanto o "dono" existir.
+- `CASCADE` — endereços de um cliente, imagens de um produto/variação, estoque de uma variação, itens de um pedido, carrinhos de um cliente, itens de um carrinho: fazem sentido apenas enquanto o "dono" existir.
 - `SET NULL` — `categoria_pai_id`: apagar uma categoria-pai não deve apagar as subcategorias.
 
 ## Índices
@@ -166,7 +171,7 @@ Todas as FKs têm índice (categoria do produto, produto da variação, cliente/
 \i schema.sql
 ```
 
-`schema.sql` cria, na ordem: o ENUM `status_pedido`, as 11 tabelas (`categorias`, `produtos`, `variacoes_produto`, `imagens_produto`, `clientes`, `enderecos`, `pedidos`, `itens_pedido`, `pagamentos`, `estoques`, `avaliacoes`) e os índices.
+`schema.sql` cria, na ordem: o ENUM `status_pedido`, as 13 tabelas (`categorias`, `produtos`, `variacoes_produto`, `imagens_produto`, `clientes`, `enderecos`, `carrinhos`, `carrinho_itens`, `pedidos`, `itens_pedido`, `pagamentos`, `estoques`, `avaliacoes`) e os índices.
 
 ---
 
