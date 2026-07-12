@@ -280,9 +280,18 @@ CREATE TABLE pagamentos (
         CHECK (valor > 0)
 );
 
+CREATE TABLE depositos (
+    id BIGINT GENERATED ALWAYS AS IDENTITY,
+    nome VARCHAR(100) NOT NULL,
+    localizacao VARCHAR(255) NOT NULL,
+
+    CONSTRAINT pk_depositos PRIMARY KEY (id)
+);
+
 CREATE TABLE estoques (
     id BIGINT GENERATED ALWAYS AS IDENTITY,
     variacao_produto_id BIGINT NOT NULL,
+    deposito_id BIGINT NOT NULL,
     quantidade_disponivel INTEGER NOT NULL DEFAULT 0,
     created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -295,8 +304,14 @@ CREATE TABLE estoques (
         ON UPDATE CASCADE
         ON DELETE CASCADE,
 
-    CONSTRAINT uq_estoques_variacao_produto_id
-        UNIQUE (variacao_produto_id),
+    CONSTRAINT fk_estoques_deposito_id
+        FOREIGN KEY (deposito_id)
+        REFERENCES depositos(id)
+        ON UPDATE CASCADE
+        ON DELETE RESTRICT,
+
+    CONSTRAINT uq_estoques_variacao_produto_id_deposito_id
+        UNIQUE (variacao_produto_id, deposito_id),
 
     CONSTRAINT ck_estoques_quantidade_disponivel_nao_negativa
         CHECK (quantidade_disponivel >= 0)
@@ -380,3 +395,6 @@ ON pagamentos (pedido_id);
 
 CREATE INDEX IF NOT EXISTS idx_pagamentos_status
 ON pagamentos (status);
+
+CREATE INDEX IF NOT EXISTS idx_estoques_deposito_id
+ON estoques (deposito_id);

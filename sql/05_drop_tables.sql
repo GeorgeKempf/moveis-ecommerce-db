@@ -1,6 +1,7 @@
 DROP TABLE IF EXISTS avaliacoes;
 DROP TABLE IF EXISTS pagamentos;
 DROP TABLE IF EXISTS estoques;
+DROP TABLE IF EXISTS depositos;
 DROP TABLE IF EXISTS itens_pedido;
 DROP TABLE IF EXISTS pedidos;
 

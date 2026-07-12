@@ -38,3 +38,9 @@
 - Cada avaliação pertence a apenas um produto.
 - Cada avaliação pertence a apenas um cliente.
 - Uma avaliação deve estar vinculada a uma compra realizada.
+
+# Diagrama Entidade-Relacionamento
+
+O diagrama abaixo representa as entidades, os atributos principais e os relacionamentos do banco de dados do e-commerce de móveis.
+
+![Diagrama Entidade-Relacionamento](https://dbdiagram.io/d/6a4e425036d348d1209646fc)

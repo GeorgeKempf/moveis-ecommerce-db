@@ -53,3 +53,6 @@ ON pagamentos (pedido_id);
 
 CREATE INDEX IF NOT EXISTS idx_pagamentos_status
 ON pagamentos (status);
+
+CREATE INDEX IF NOT EXISTS idx_estoques_deposito_id
+ON estoques (deposito_id);
