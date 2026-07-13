@@ -15,11 +15,11 @@ Modelagem e implementação de um banco de dados PostgreSQL para uma plataforma 
 | `schema.sql` | DDL completo do banco (ENUM, tabelas, constraints e índices), executável do zero. |
 | `sql/01_create_tables.sql` | Criação do ENUM `status_pedido` e das tabelas base, separada dos índices adicionais. |
 | `sql/02_constraints_indexes.sql` | Índices adicionais (além dos já criados junto com as tabelas). |
-| `sql/03_insert_dados_teste.sql` | Reservado para o `seed.sql` (bônus) — **ainda não preenchido**. |
-| `sql/04_consultas_teste.sql` | Reservado para as queries de exemplo (bônus) — **ainda não preenchido**. |
-| `sql/05_drop_tables.sql` | Remove todas as tabelas e o ENUM, na ordem correta, para recriar o banco do zero. |
+| `sql/seed.sql` | Dados de teste (bônus) — três fluxos de compra completos, do cliente ao pagamento. |
+| `sql/03_consultas_teste.sql` | Queries de exemplo (bônus) — resumo de pedidos, mais vendidos por categoria, estoque baixo, ticket médio. |
+| `sql/04_drop_tables.sql` | Remove todas as tabelas e o ENUM, na ordem correta, para recriar o banco do zero. |
 | `docs/regras-negocio.md` | Regras de negócio consideradas na modelagem. |
-| `docs/diagrama-er.md` | Mapeamento textual dos relacionamentos entre entidades (não é um diagrama visual — o bônus de ER visual em dbdiagram.io/drawio ainda não foi feito). |
+| `docs/diagrama-er.md` | Mapeamento textual dos relacionamentos entre entidades + link do diagrama ER visual (dbdiagram.io, bônus). |
 | `docs/fluxo-carrinho-pedido.md` | Fluxo de compra do carrinho até a criação do pedido. |
 
 `schema.sql` é o arquivo de referência — `sql/01` e `sql/02` contêm o mesmo DDL separado por etapa, para facilitar a leitura.
@@ -108,7 +108,7 @@ O banco não calcula frete — apenas guarda os dados necessários para o cálcu
 
 ### Estoque
 
-`estoques` se relaciona 1:1 com `variacoes_produto` (constraint `UNIQUE` em `variacao_produto_id`), já que o controle é por variação, não por produto — cada acabamento/cor tem sua própria quantidade. `quantidade_disponivel` é `INTEGER` com `CHECK >= 0`. Suporte a múltiplos depósitos não foi implementado (item bônus/opcional do desafio).
+`estoques` guarda a quantidade disponível por **variação de produto e por depósito** (`UNIQUE (variacao_produto_id, deposito_id)`), já que o controle é por variação, não por produto — cada acabamento/cor tem sua própria quantidade em cada centro de distribuição. `depositos` (bônus) modela os centros de distribuição (nome, localização); uma mesma variação pode ter estoque em mais de um depósito, e o estoque total do produto é a soma entre eles. `quantidade_disponivel` é `INTEGER` com `CHECK >= 0`.
 
 ### Carrinho e itens do carrinho
 
@@ -155,7 +155,6 @@ Todas as FKs têm índice (categoria do produto, produto da variação, cliente/
 - O cálculo de frete é responsabilidade da aplicação; o banco só armazena peso/dimensões (entrada) e o valor final (saída, em `pedidos.valor_frete`).
 - Avaliação exige compra: vinculei `avaliacoes` a `itens_pedido`, não a `produtos`, para que a integridade referencial já impeça avaliação sem compra.
 - Hashing de senha não foi implementado de verdade — só o campo `senha_hash` foi modelado.
-- Suporte a múltiplos depósitos não foi implementado (bônus/opcional no enunciado).
 - `valor_total` do pedido fica em `pedidos`, a ser preenchido pela aplicação a partir dos itens + frete (o banco não recalcula isso via trigger).
 
 ---
@@ -166,25 +165,29 @@ Todas as FKs têm índice (categoria do produto, produto da variação, cliente/
 -- cria tudo do zero
 \i schema.sql
 
+-- popula com dados de teste (bônus)
+\i sql/seed.sql
+
 -- para recriar do zero
-\i sql/05_drop_tables.sql
+\i sql/04_drop_tables.sql
 \i schema.sql
 ```
 
-`schema.sql` cria, na ordem: o ENUM `status_pedido`, as 13 tabelas (`categorias`, `produtos`, `variacoes_produto`, `imagens_produto`, `clientes`, `enderecos`, `carrinhos`, `carrinho_itens`, `pedidos`, `itens_pedido`, `pagamentos`, `estoques`, `avaliacoes`) e os índices.
+`schema.sql` cria, na ordem: o ENUM `status_pedido`, as 14 tabelas (`categorias`, `produtos`, `variacoes_produto`, `imagens_produto`, `clientes`, `enderecos`, `carrinhos`, `carrinho_itens`, `pedidos`, `itens_pedido`, `pagamentos`, `depositos`, `estoques`, `avaliacoes`) e os índices.
 
 ---
 
-## Pendências / bônus não concluídos
+## Bônus entregues
 
-- **`seed.sql`** (`sql/03_insert_dados_teste.sql`): ainda vazio.
-- **Queries de exemplo** (`sql/04_consultas_teste.sql`): ainda vazio — ex. produtos mais vendidos por categoria, produtos com estoque baixo, ticket médio por cliente.
-- **Diagrama ER visual**: existe apenas o mapeamento textual em `docs/diagrama-er.md`; falta gerar o diagrama em dbdiagram.io/drawio.
+- **`sql/seed.sql`** — dados de teste com três fluxos de compra completos (cliente → carrinho → pedido → pagamento → avaliação).
+- **`sql/03_consultas_teste.sql`** — queries de exemplo: resumo de pedidos, produtos mais vendidos por categoria, produtos com estoque baixo, ticket médio por cliente.
+- **Múltiplos depósitos** — tabela `depositos`, com `estoques` relacionando variação de produto a depósito.
+- **Diagrama ER visual** — ver link em `docs/diagrama-er.md` (dbdiagram.io).
 
 ## O que faria diferente com mais tempo
 
 - Trigger para atualizar `updated_at` automaticamente, em vez de depender da aplicação.
 - Tabela de domínio para status de pagamento, em vez de `VARCHAR` livre.
 - Histórico de movimentações de estoque (auditoria de entradas/saídas), não só a quantidade atual.
-- Suporte a múltiplos depósitos/centros de distribuição.
 - Trigger ou constraint adicional para validar transições de status do pedido (hoje qualquer status pode ir para qualquer status).
+- No `seed.sql`, demonstrar um produto com mais de uma variação (cores/acabamentos diferentes) — hoje cada produto de exemplo tem só uma.
