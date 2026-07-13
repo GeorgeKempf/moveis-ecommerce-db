@@ -15,7 +15,7 @@ Modelagem e implementação de um banco de dados PostgreSQL para uma plataforma 
 | `schema.sql` | DDL completo do banco (ENUM, tabelas, constraints e índices), executável do zero. |
 | `sql/01_create_tables.sql` | Criação do ENUM `status_pedido` e das tabelas base, separada dos índices adicionais. |
 | `sql/02_constraints_indexes.sql` | Índices adicionais (além dos já criados junto com as tabelas). |
-| `sql/seed.sql` | Dados de teste (bônus) — três fluxos de compra completos, do cliente ao pagamento. |
+| `sql/seed.sql` | Dados de teste (bônus) — três fluxos de compra completos até o pagamento; um deles também demonstra a avaliação de um item comprado. |
 | `sql/03_consultas_teste.sql` | Queries de exemplo (bônus) — resumo de pedidos, mais vendidos por categoria, estoque baixo, ticket médio. |
 | `sql/04_drop_tables.sql` | Remove todas as tabelas e o ENUM, na ordem correta, para recriar o banco do zero. |
 | `docs/regras-negocio.md` | Regras de negócio consideradas na modelagem. |
