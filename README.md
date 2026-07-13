@@ -179,7 +179,7 @@ Todas as FKs têm índice (categoria do produto, produto da variação, cliente/
 
 ## Bônus entregues
 
-- **`sql/seed.sql`** — dados de teste com três fluxos de compra completos (cliente → carrinho → pedido → pagamento → avaliação).
+- **`sql/seed.sql`** — dados de teste com três fluxos de compra completos até o pagamento; um deles também demonstra a avaliação de um item comprado.
 - **`sql/03_consultas_teste.sql`** — queries de exemplo: resumo de pedidos, produtos mais vendidos por categoria, produtos com estoque baixo, ticket médio por cliente.
 - **Múltiplos depósitos** — tabela `depositos`, com `estoques` relacionando variação de produto a depósito.
 - **Diagrama ER visual** — ver link em `docs/diagrama-er.md` (dbdiagram.io).
