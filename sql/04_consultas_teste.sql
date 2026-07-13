@@ -1,4 +1,4 @@
--- Consulta 1 - pedidos 
+-- Consulta 1 — resumo dos pedidos
 
 SELECT
     c.nome AS cliente,
@@ -23,25 +23,11 @@ JOIN pagamentos pg
     ON pg.pedido_id = p.id
 ORDER BY p.id;
 
--- Consulta 2 — estoque dos produtos por depósito
+
+-- Consulta 2 — produtos mais vendidos por categoria
 
 SELECT
-    p.nome AS produto,
-    v.sku,
-    d.nome AS deposito,
-    e.quantidade_disponivel
-FROM estoques e
-JOIN variacoes_produto v
-    ON v.id = e.variacao_produto_id
-JOIN produtos p
-    ON p.id = v.produto_id
-JOIN depositos d
-    ON d.id = e.deposito_id
-ORDER BY p.nome, d.nome;
-
--- Consulta 3 — produtos mais vendidos
-
-SELECT
+    c.nome AS categoria,
     p.nome AS produto,
     SUM(ip.quantidade) AS quantidade_vendida
 FROM itens_pedido ip
@@ -49,16 +35,42 @@ JOIN variacoes_produto v
     ON v.id = ip.variacao_produto_id
 JOIN produtos p
     ON p.id = v.produto_id
-GROUP BY p.nome
-ORDER BY quantidade_vendida DESC;
+JOIN categorias c
+    ON c.id = p.categoria_id
+GROUP BY
+    c.nome,
+    p.nome
+ORDER BY
+    c.nome,
+    quantidade_vendida DESC;
 
--- Consulta 4 — valor total gasto por cliente
+
+-- Consulta 3 — produtos com estoque baixo
+-- Considera estoque baixo quando o total é menor que 6 unidades
+
+SELECT
+    p.nome AS produto,
+    v.sku,
+    SUM(e.quantidade_disponivel) AS estoque_total
+FROM estoques e
+JOIN variacoes_produto v
+    ON v.id = e.variacao_produto_id
+JOIN produtos p
+    ON p.id = v.produto_id
+GROUP BY
+    p.nome,
+    v.sku
+HAVING SUM(e.quantidade_disponivel) < 6
+ORDER BY estoque_total;
+
+
+-- Consulta 4 — ticket médio por cliente
 
 SELECT
     c.nome AS cliente,
-    SUM(p.valor_total) AS total_gasto
+    AVG(p.valor_total) AS ticket_medio
 FROM pedidos p
 JOIN clientes c
     ON c.id = p.cliente_id
 GROUP BY c.nome
-ORDER BY total_gasto DESC;
+ORDER BY ticket_medio DESC;
